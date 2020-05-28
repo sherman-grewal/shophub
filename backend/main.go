@@ -25,10 +25,9 @@ func main() {
 	r.Use(cors.Default())
 
 	v1 := r.Group("/api")
-	users.UsersRegister(v1.Group("/users"))
-	v1.Use(users.AuthMiddleware(false))
+	users.UserAuthentication(v1.Group("/users"))
 	v1.Use(users.AuthMiddleware(true))
-	users.UserRegister(v1.Group("/user"))
+	users.User(v1.Group("/user"))
 	cart.CheckoutCart(v1.Group("/cart"))
 
 	// Run the server

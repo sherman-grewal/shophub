@@ -15,8 +15,6 @@ type UserModelValidator struct {
 		LastName  string `form:"lastName" json:"lastName" binding:"required,alpha,min=4,max=255"`
 		Email     string `form:"email" json:"email" binding:"required,email"`
 		Password  string `form:"password" json:"password" binding:"required,min=8,max=255"`
-		Bio       string `form:"bio" json:"bio" binding:"max=1024"`
-		Image     string `form:"image" json:"image" binding:"omitempty,url"`
 	} `json:"user"`
 	userModel UserModel `json:"-"`
 }
@@ -54,6 +52,41 @@ func NewUserModelValidatorFillWith(userModel UserModel) UserModelValidator {
 	userModelValidator.User.Password = common.NBRandomPassword
 
 	return userModelValidator
+}
+
+type PaymentCardModelValidator struct {
+	PaymentCard struct {
+		CardNumber   string `form:"cardNumber" json:"cardNumber" binding:"required,num,min=4,max=20"`
+		ExpiryDate   string `form:"expiryDate" json:"expiryDate" binding:"required,num,min=0,max=6"`
+		SecurityCode string `form:"securityCode" json:"securityCode" binding:"required,num,min=2,max=4"`
+	} `json:"paymentCard"`
+	paymentCardModel PaymentCardModel `json:"-"`
+}
+
+func (self *PaymentCardModelValidator) Bind(c *gin.Context) error {
+	err := common.Bind(c, self)
+	if err != nil {
+		return err
+	}
+	self.paymentCardModel.CardNumber = self.PaymentCard.CardNumber
+	self.paymentCardModel.ExpiryDate = self.PaymentCard.ExpiryDate
+	self.paymentCardModel.SecurityCode = self.PaymentCard.SecurityCode
+	return nil
+}
+
+// You can put the default value of a Validator here
+func NewPaymentCardModelValidator() PaymentCardModelValidator {
+	paymentCardModelValidator := PaymentCardModelValidator{}
+	return paymentCardModelValidator
+}
+
+func NewPaymentCardModelValidatorFilled(paymentCardModel PaymentCardModel) PaymentCardModelValidator {
+	paymentCardModelValidator := NewPaymentCardModelValidator()
+	paymentCardModelValidator.PaymentCard.CardNumber = paymentCardModel.CardNumber
+	paymentCardModelValidator.PaymentCard.ExpiryDate = paymentCardModel.ExpiryDate
+	paymentCardModelValidator.PaymentCard.SecurityCode = paymentCardModel.SecurityCode
+
+	return paymentCardModelValidator
 }
 
 type LoginValidator struct {
