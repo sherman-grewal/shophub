@@ -3,16 +3,28 @@ package users
 import (
 	"errors"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/sherman-grewal/shophub-backend/common"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type PaymentCardModel struct {
+	gorm.Model
+	CardNumber   string
+	ExpiryDate   string
+	SecurityCode string
+	UserID       uint
+}
+
 type UserModel struct {
-	ID           uint   `gorm:"primary_key"`
-	FirstName    string `gorm:"column:firstName"`
-	LastName     string `gorm:"column:lastName"`
-	Email        string `gorm:"column:email;unique_index"`
-	PasswordHash string `gorm:"column:password;not null"`
+	gorm.Model
+	ID               uint   `gorm:"primary_key"`
+	FirstName        string `gorm:"column:firstName"`
+	LastName         string `gorm:"column:lastName"`
+	Email            string `gorm:"column:email;unique_index"`
+	PasswordHash     string `gorm:"column:password;not null"`
+	PaymentCardModel PaymentCardModel
 }
 
 // Migrate the schema of database if needed
@@ -30,6 +42,12 @@ func (u *UserModel) setPassword(password string) error {
 	// Make sure the second param `bcrypt generator cost` between [4, 32)
 	passwordHash, _ := bcrypt.GenerateFromPassword(bytePassword, bcrypt.DefaultCost)
 	u.PasswordHash = string(passwordHash)
+	return nil
+}
+
+func (u *UserModel) setPaymentCard(paymentCard PaymentCardModel) error {
+	// TODO: Payment Card Validations
+	u.PaymentCardModel = paymentCard
 	return nil
 }
 
