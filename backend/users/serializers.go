@@ -50,3 +50,23 @@ func (self *UserSerializer) Response() UserResponse {
 	}
 	return user
 }
+
+type PaymentCardSerializer struct {
+	c *gin.Context
+}
+
+type PaymentCardResponse struct {
+	CardNumber   string
+	ExpiryDate   string
+	SecurityCode string
+}
+
+func (self *PaymentCardSerializer) Response() PaymentCardResponse {
+	myPaymentCardModel := self.c.MustGet("my_payment_card_model").(PaymentCardModel)
+	paymentCard := PaymentCardResponse{
+		CardNumber:   myPaymentCardModel.CardNumber,
+		ExpiryDate:   myPaymentCardModel.ExpiryDate,
+		SecurityCode: myPaymentCardModel.SecurityCode,
+	}
+	return paymentCard
+}

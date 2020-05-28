@@ -8,14 +8,15 @@ import (
 	"github.com/sherman-grewal/shophub-backend/common"
 )
 
-func UsersRegister(router *gin.RouterGroup) {
+func UserAuthentication(router *gin.RouterGroup) {
 	router.POST("/", UsersRegistration)
 	router.POST("/login", UsersLogin)
 }
 
-func UserRegister(router *gin.RouterGroup) {
+func User(router *gin.RouterGroup) {
 	router.GET("/", UserRetrieve)
-	router.PUT("/", UserUpdate)
+	router.PATCH("/", UserUpdate)
+	router.PATCH("/payment", PaymentUpdate)
 }
 
 func UsersRegistration(c *gin.Context) {
@@ -60,6 +61,25 @@ func UsersLogin(c *gin.Context) {
 
 func UserRetrieve(c *gin.Context) {
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	serializer := UserSerializer{c}
+	c.JSON(http.StatusOK, gin.H{"user": serializer.Response()})
+}
+
+func PaymentUpdate(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	myPaymentCardModel := c.MustGet("my_payment_card_model").(PaymentCardModel)
+	myUserModel := c.MustGet("my_user_model").(UserModel)
+	paymentCardModelValidator := NewPaymentCardModelValidatorFilled(myPaymentCardModel)
+	if err := paymentCardModelValidator.Bind(c); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		return
+	}
+	paymentCardModelValidator.paymentCardModel.ID = myUserModel.PaymentCard.ID
+	if err := myPaymentCardModel.Update(paymentCardModelValidator.paymentCardModel); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		return
+	}
+	UpdateContextUserModel(c, myUserModel.ID)
 	serializer := UserSerializer{c}
 	c.JSON(http.StatusOK, gin.H{"user": serializer.Response()})
 }

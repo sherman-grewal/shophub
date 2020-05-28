@@ -3,9 +3,19 @@ package users
 import (
 	"errors"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/sherman-grewal/shophub-backend/common"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type PaymentCardModel struct {
+	gorm.Model
+	CardNumber   string
+	ExpiryDate   string
+	SecurityCode string
+	UserID       uint
+}
 
 type UserModel struct {
 	ID           uint   `gorm:"primary_key"`
@@ -13,6 +23,7 @@ type UserModel struct {
 	LastName     string `gorm:"column:lastName"`
 	Email        string `gorm:"column:email;unique_index"`
 	PasswordHash string `gorm:"column:password;not null"`
+	PaymentCard  PaymentCardModel
 }
 
 // Migrate the schema of database if needed
@@ -57,6 +68,13 @@ func SaveOne(data interface{}) error {
 
 //  err := db.Model(userModel).Update(UserModel).Error
 func (model *UserModel) Update(data interface{}) error {
+	db := common.GetDB()
+	err := db.Model(model).Update(data).Error
+	return err
+}
+
+//  err := db.Model(userModel).Update(UserModel).Error
+func (model *PaymentCardModel) Update(data interface{}) error {
 	db := common.GetDB()
 	err := db.Model(model).Update(data).Error
 	return err
